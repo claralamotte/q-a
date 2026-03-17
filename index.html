@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Project Edelweiss - Q&A Room</title>
+<style>
+  :root {
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f5f5f2;
+    --color-background-tertiary: #eeede9;
+    --color-text-primary: #1a1a18;
+    --color-text-secondary: #6b6b67;
+    --color-border-tertiary: rgba(0,0,0,0.12);
+    --color-border-secondary: rgba(0,0,0,0.22);
+    --color-border-primary: rgba(0,0,0,0.35);
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-background-primary: #1e1e1c;
+      --color-background-secondary: #2a2a27;
+      --color-background-tertiary: #333330;
+      --color-text-primary: #f0efea;
+      --color-text-secondary: #9a9993;
+      --color-border-tertiary: rgba(255,255,255,0.1);
+      --color-border-secondary: rgba(255,255,255,0.18);
+      --color-border-primary: rgba(255,255,255,0.3);
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); background: var(--color-background-tertiary); color: var(--color-text-primary); min-height: 100vh; }
+  .page { max-width: 860px; margin: 0 auto; padding: 2rem 1rem; }
+  .card { background: var(--color-background-primary); border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); overflow: hidden; }
+
+  .header { padding: 1.25rem 1.5rem; border-bottom: 0.5px solid var(--color-border-tertiary); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .header h1 { font-size: 18px; font-weight: 500; color: var(--color-text-primary); }
+  .project-badge { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 3px 10px; font-size: 12px; color: var(--color-text-secondary); }
+  .hbtns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { font-size: 12px; padding: 6px 13px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; font-family: var(--font-sans); }
+  .btn:hover { background: var(--color-background-secondary); }
+  .btn-primary { background: var(--color-text-primary); color: var(--color-background-primary); border-color: var(--color-text-primary); }
+  .btn-primary:hover { opacity: 0.85; }
+
+  .stats-bar { display: flex; gap: 10px; padding: 1rem 1.5rem; flex-wrap: wrap; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.5rem 1rem; flex: 1; min-width: 80px; }
+  .stat-label { font-size: 11px; color: var(--color-text-secondary); margin-bottom: 2px; }
+  .stat-value { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+
+  .toolbar { padding: 0.65rem 1.5rem; display: flex; gap: 8px; flex-wrap: wrap; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .toolbar input, .toolbar select { font-size: 12px; padding: 5px 9px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); font-family: var(--font-sans); }
+  .toolbar input { flex: 1; min-width: 140px; }
+
+  .sections { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+  .section-title { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; padding-bottom: 5px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+
+  .q-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 6px; }
+  .q-card:last-child { margin-bottom: 0; }
+  .q-top { display: flex; align-items: flex-start; gap: 8px; }
+  .q-num { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); min-width: 22px; padding-top: 2px; }
+  .q-text { font-size: 13px; color: var(--color-text-primary); line-height: 1.5; flex: 1; }
+  .q-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 3px; margin-left: 30px; line-height: 1.4; }
+  .status-badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; white-space: nowrap; font-weight: 500; margin-left: 4px; }
+  .status-pending { background: #FAEEDA; color: #854F0B; }
+  .status-partial { background: #E6F1FB; color: #185FA5; }
+  .status-answered { background: #EAF3DE; color: #3B6D11; }
+
+  .answer-block { margin-top: 10px; margin-left: 30px; }
+  .answer-display { font-size: 13px; color: var(--color-text-primary); line-height: 1.6; padding: 8px 10px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); border-left: 2px solid var(--color-border-secondary); min-height: 36px; cursor: pointer; }
+  .answer-display.empty { color: var(--color-text-secondary); font-style: italic; }
+  .answer-display:hover { border-left-color: var(--color-border-primary); }
+  .answer-edit { display: none; flex-direction: column; gap: 6px; }
+  .answer-edit.open { display: flex; }
+  .answer-area { width: 100%; min-height: 80px; font-size: 13px; padding: 8px 10px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-secondary); color: var(--color-text-primary); font-family: var(--font-sans); resize: vertical; line-height: 1.6; }
+  .answer-area:focus { outline: none; border-color: var(--color-border-primary); background: var(--color-background-primary); }
+  .edit-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+  .flag-select { font-size: 11px; padding: 4px 7px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-secondary); font-family: var(--font-sans); }
+  .edit-btns { display: flex; gap: 6px; }
+  .save-btn { font-size: 11px; padding: 4px 12px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); cursor: pointer; font-family: var(--font-sans); }
+  .save-btn:hover { background: var(--color-background-secondary); }
+  .save-btn.saved { background: #EAF3DE; color: #3B6D11; border-color: #639922; }
+  .flag-tag { font-size: 10px; padding: 2px 6px; border-radius: 20px; background: var(--color-background-secondary); color: var(--color-text-secondary); border: 0.5px solid var(--color-border-tertiary); margin-left: 6px; }
+
+  .q-actions { margin-top: 6px; margin-left: 30px; }
+
+  .add-form { background: var(--color-background-secondary); border: 0.5px dashed var(--color-border-secondary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin: 0 1.5rem 1rem; display: none; }
+  .add-form.open { display: block; }
+  .add-form select, .add-form input, .add-form textarea { width: 100%; font-size: 13px; padding: 7px 9px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); font-family: var(--font-sans); margin-bottom: 7px; }
+  .add-form textarea { min-height: 55px; resize: vertical; }
+  .form-title { font-size: 13px; font-weight: 500; margin-bottom: 8px; color: var(--color-text-primary); }
+  .form-row { display: flex; justify-content: flex-end; gap: 8px; }
+
+  .note { font-size: 11px; color: var(--color-text-secondary); padding: 0.5rem 1.5rem 1.25rem; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="card">
+    <div class="header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <h1>Q&A Room</h1>
+        <span class="project-badge">Project Edelweiss</span>
+      </div>
+      <div class="hbtns">
+        <button class="btn" onclick="toggleAdd()">+ Add question</button>
+        <button class="btn btn-primary" onclick="exportLog()">Export log</button>
+      </div>
+    </div>
+
+    <div class="stats-bar" id="stats-bar"></div>
+
+    <div class="toolbar">
+      <input type="text" id="srch" placeholder="Search..." oninput="renderAll()"/>
+      <select id="fst" onchange="renderAll()">
+        <option value="all">All statuses</option>
+        <option value="pending">Pending</option>
+        <option value="partial">Partial</option>
+        <option value="answered">Answered</option>
+      </select>
+      <select id="fsc" onchange="renderAll()">
+        <option value="all">All sections</option>
+        <option value="Sales">Sales</option>
+        <option value="Opex">Opex</option>
+        <option value="Balance Sheet">Balance Sheet</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div class="sections" id="container"></div>
+
+    <div class="add-form" id="add-form">
+      <div class="form-title">New question</div>
+      <select id="new-sec">
+        <option value="Sales">Sales</option>
+        <option value="Opex">Opex</option>
+        <option value="Balance Sheet">Balance Sheet</option>
+        <option value="Other">Other</option>
+      </select>
+      <textarea id="new-qt" placeholder="Question text..."></textarea>
+      <input type="text" id="new-qs" placeholder="Sub-question (optional)"/>
+      <div class="form-row">
+        <button class="btn" onclick="toggleAdd()">Cancel</button>
+        <button class="btn btn-primary" onclick="addQ()">Add</button>
+      </div>
+    </div>
+
+    <p class="note">Click on an answer to edit it. Answers are saved locally in your browser.</p>
+  </div>
+</div>
+
+<script>
+const SECS=["Sales","Opex","Balance Sheet","Other"];
+const INIT=[
+  {id:1,section:"Sales",text:"Per dosage form last three years volumes and selling price tying back to revenue",sub:"For each of the products",answer:"",flag:""},
+  {id:2,section:"Sales",text:"Current PGHT price and any increases/changes in last three years",sub:"For each of the products",answer:"",flag:""},
+  {id:3,section:"Sales",text:"Five year forecast for each product (per dosage form volume/price), along with supporting assumptions",sub:"If available",answer:"",flag:""},
+  {id:4,section:"Sales",text:"Details of sales out for top five countries for each product (dosage form)",sub:"If available",answer:"",flag:""},
+  {id:5,section:"Opex",text:"Please confirm if there are any head-office costs or similar allocations to the company. We note that there is only one FTE, and how this would support the business being managed (sales, ordering, regulatory, finance, legal etc.)",sub:"",answer:"",flag:""},
+  {id:6,section:"Opex",text:"Any non-arms length transactions within the group",sub:"",answer:"",flag:""},
+  {id:7,section:"Opex",text:"Five year forecast, along with supporting assumptions",sub:"If available",answer:"",flag:""},
+  {id:8,section:"Opex",text:"Summary scope and resources of the 25% promotion fee (and countries covered)",sub:"",answer:"",flag:""},
+  {id:9,section:"Balance Sheet",text:"How is the inventory accounted for, as there is none on the balance sheet",sub:"",answer:"",flag:""},
+  {id:10,section:"Balance Sheet",text:"Would the transaction include the cash",sub:"",answer:"",flag:""},
+  {id:11,section:"Other",text:"Audited AFS for the past four years if available",sub:"",answer:"",flag:""},
+  {id:12,section:"Other",text:"Please share the proforma income statement in excel, along with any pro-forma adjustments processed",sub:"",answer:"",flag:""},
+  {id:13,section:"Other",text:"Metopine raw material - are there other manufacturers and has an alternative source been identified? Any change in cost",sub:"",answer:"",flag:""},
+  {id:14,section:"Other",text:"Any quality issues on any of the products in the market over past three years",sub:"",answer:"",flag:""},
+  {id:15,section:"Other",text:"GMP status of each CMO in key markets",sub:"",answer:"",flag:""},
+];
+
+let qs=JSON.parse(localStorage.getItem('edw_qna_gh')||'null')||INIT.map(q=>({...q}));
+let editing=new Set();
+let nextId=Math.max(...qs.map(q=>q.id))+1;
+
+function save(){try{localStorage.setItem('edw_qna_gh',JSON.stringify(qs));}catch(e){}}
+function getStatus(q){if(!q.answer||!q.answer.trim())return'pending';if(q.flag==='partial')return'partial';return'answered';}
+function statusLabel(s){return s==='pending'?'Pending':s==='partial'?'Partial':'Answered';}
+
+function renderStats(){
+  const total=qs.length;
+  const answered=qs.filter(q=>getStatus(q)==='answered').length;
+  const partial=qs.filter(q=>getStatus(q)==='partial').length;
+  const pending=qs.filter(q=>getStatus(q)==='pending').length;
+  document.getElementById('stats-bar').innerHTML=`
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-value">${total}</div></div>
+    <div class="stat"><div class="stat-label">Answered</div><div class="stat-value" style="color:#3B6D11">${answered}</div></div>
+    <div class="stat"><div class="stat-label">Partial</div><div class="stat-value" style="color:#185FA5">${partial}</div></div>
+    <div class="stat"><div class="stat-label">Pending</div><div class="stat-value" style="color:#854F0B">${pending}</div></div>`;
+}
+
+function filtered(){
+  const s=document.getElementById('srch').value.toLowerCase();
+  const fst=document.getElementById('fst').value;
+  const fsc=document.getElementById('fsc').value;
+  return qs.filter(q=>{
+    const m=q.text.toLowerCase().includes(s)||q.sub.toLowerCase().includes(s)||(q.answer||'').toLowerCase().includes(s);
+    return m&&(fst==='all'||getStatus(q)===fst)&&(fsc==='all'||q.section===fsc);
+  });
+}
+
+function renderAll(){
+  renderStats();
+  const list=filtered();
+  const grouped={};
+  SECS.forEach(s=>{grouped[s]=list.filter(q=>q.section===s);});
+  let html='';
+  SECS.forEach(sec=>{
+    const sq=grouped[sec];
+    if(!sq.length)return;
+    html+=`<div class="section-block"><div class="section-title">${sec}</div>`;
+    sq.forEach((q,i)=>{
+      const st=getStatus(q);
+      const isEditing=editing.has(q.id);
+      const ansEmpty=!q.answer||!q.answer.trim();
+      const flagTag=q.flag?`<span class="flag-tag">${q.flag}</span>`:'';
+      html+=`<div class="q-card" id="card-${q.id}">
+        <div class="q-top">
+          <span class="q-num">${i+1}.</span>
+          <span class="q-text">${q.text}</span>
+          <span class="status-badge status-${st}">${statusLabel(st)}</span>
+        </div>
+        ${q.sub?`<div class="q-sub">${q.sub}</div>`:''}
+        <div class="answer-block">
+          <div class="answer-display ${ansEmpty?'empty':''}" id="disp-${q.id}" onclick="startEdit(${q.id})" title="Click to edit">${ansEmpty?'No answer yet - click to add...':(q.answer.replace(/\n/g,'<br>'))}${flagTag}</div>
+          <div class="answer-edit ${isEditing?'open':''}" id="edit-${q.id}">
+            <textarea class="answer-area" id="ans-${q.id}">${q.answer||''}</textarea>
+            <div class="edit-footer">
+              <select class="flag-select" id="flag-${q.id}">
+                <option value="" ${q.flag===''?'selected':''}>No flag</option>
+                <option value="partial" ${q.flag==='partial'?'selected':''}>Partial answer</option>
+                <option value="doc" ${q.flag==='doc'?'selected':''}>Document to follow</option>
+                <option value="nda" ${q.flag==='nda'?'selected':''}>NDA required</option>
+                <option value="na" ${q.flag==='na'?'selected':''}>N/A</option>
+              </select>
+              <div class="edit-btns">
+                <button class="save-btn" onclick="cancelEdit(${q.id})">Cancel</button>
+                <button class="save-btn" id="sb-${q.id}" onclick="saveQ(${q.id})">Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="q-actions"><button class="btn" style="font-size:10px;padding:2px 8px;color:var(--color-text-secondary);" onclick="deleteQ(${q.id})">Remove</button></div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('container').innerHTML=html;
+}
+
+function startEdit(id){
+  editing.add(id);
+  document.getElementById('disp-'+id).style.display='none';
+  document.getElementById('edit-'+id).classList.add('open');
+  const ta=document.getElementById('ans-'+id);
+  if(ta){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);}
+}
+
+function cancelEdit(id){
+  editing.delete(id);
+  document.getElementById('disp-'+id).style.display='';
+  document.getElementById('edit-'+id).classList.remove('open');
+}
+
+function saveQ(id){
+  const ta=document.getElementById('ans-'+id);
+  const fl=document.getElementById('flag-'+id);
+  const q=qs.find(q=>q.id===id);
+  if(!q)return;
+  q.answer=ta?ta.value:'';
+  q.flag=fl?fl.value:'';
+  save();
+  editing.delete(id);
+  renderAll();
+}
+
+function deleteQ(id){
+  if(!confirm('Remove this question?'))return;
+  qs=qs.filter(q=>q.id!==id);
+  editing.delete(id);
+  save();renderAll();
+}
+
+function toggleAdd(){document.getElementById('add-form').classList.toggle('open');}
+
+function addQ(){
+  const sec=document.getElementById('new-sec').value;
+  const text=document.getElementById('new-qt').value.trim();
+  const sub=document.getElementById('new-qs').value.trim();
+  if(!text)return;
+  qs.push({id:nextId++,section:sec,text,sub,answer:'',flag:''});
+  document.getElementById('new-qt').value='';
+  document.getElementById('new-qs').value='';
+  save();toggleAdd();renderAll();
+}
+
+function exportLog(){
+  let out=`PROJECT EDELWEISS - Q&A LOG\n${'='.repeat(40)}\n\n`;
+  SECS.forEach(sec=>{
+    const sq=qs.filter(q=>q.section===sec);
+    if(!sq.length)return;
+    out+=`${sec.toUpperCase()}\n${'-'.repeat(sec.length)}\n`;
+    sq.forEach((q,i)=>{
+      out+=`\nQ${i+1}. ${q.text}\n`;
+      if(q.sub)out+=`    (${q.sub})\n`;
+      out+=`Status: ${statusLabel(getStatus(q))}${q.flag?' | Flag: '+q.flag:''}\n`;
+      out+=`Answer: ${q.answer||'(no answer yet)'}\n`;
+    });
+    out+='\n';
+  });
+  navigator.clipboard.writeText(out).then(()=>alert('Q&A log copied to clipboard.')).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=out;document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');document.body.removeChild(ta);
+    alert('Q&A log copied to clipboard.');
+  });
+}
+
+renderAll();
+</script>
+</body>
+</html>
